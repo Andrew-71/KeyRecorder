@@ -66,9 +66,7 @@ class MainWindow(QMainWindow):
 
     def toggle_recording(self):
         if not self.is_recording:
-            #mouse.hook(self.events.append)
-            #keyboard.hook(self.events.append)
-            mouse.hook(self.add_item)  # starting the mouse recording
+            mouse.hook(self.add_item)
             keyboard.hook(self.add_item)
             self.is_recording = True
             self.toggle_recording_btn.setText('Stop recording')
@@ -80,8 +78,8 @@ class MainWindow(QMainWindow):
 
             # TODO: DO WE NEED THIS?
             self.events = self.events[:-2]
-
             self.refresh_list()
+        self.toggle_buttons()
 
     def clear_recording(self):
         confirm_window = QMessageBox
@@ -150,6 +148,15 @@ class MainWindow(QMainWindow):
     def add_item(self, item):
         self.events.append(item)
         self.list_advanced.addItem(str(item))
+
+    # ===============================================================
+
+    def toggle_buttons(self):
+        enabled = (not self.is_recording)
+        elements = [self.save_to_file_btn, self.open_from_file_btn,
+                    self.play_btn, self.clear_recording_btn, self.typing_delay_spinbox]
+        for i in elements:
+            i.setEnabled(enabled)
 
 
 if __name__ == '__main__':
