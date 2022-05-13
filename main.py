@@ -66,8 +66,10 @@ class MainWindow(QMainWindow):
 
     def toggle_recording(self):
         if not self.is_recording:
-            mouse.hook(self.events.append)  # starting the mouse recording
-            keyboard.hook(self.events.append)
+            #mouse.hook(self.events.append)
+            #keyboard.hook(self.events.append)
+            mouse.hook(self.add_item)  # starting the mouse recording
+            keyboard.hook(self.add_item)
             self.is_recording = True
             self.toggle_recording_btn.setText('Stop recording')
         else:
@@ -120,7 +122,7 @@ class MainWindow(QMainWindow):
         with open(filename, 'wb') as f:
             pickle.dump(self.events, f)
 
-    # ===============================================================
+    # List management ===============================================
 
     def refresh_list(self):
         self.list.clear()
@@ -144,6 +146,10 @@ class MainWindow(QMainWindow):
 
         self.list.addItems(short_view)
         self.list_advanced.addItems(long_view)
+
+    def add_item(self, item):
+        self.events.append(item)
+        self.list_advanced.addItem(str(item))
 
 
 if __name__ == '__main__':
