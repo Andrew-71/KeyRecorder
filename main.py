@@ -1,4 +1,5 @@
 import sys
+import time
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, QFileDialog, QMessageBox
@@ -97,6 +98,7 @@ class MainWindow(QMainWindow):
                 mouse.play(mouse_events)
                 mouse_events = []
                 keyboard.play([i])
+                time.sleep(self.typing_delay_spinbox.value())
         mouse.play(mouse_events)
 
     # File management ===============================================
@@ -111,26 +113,12 @@ class MainWindow(QMainWindow):
         self.refresh_list()
 
     def save_file(self):
-        filename = self.save_filename.text()
-        check = verify_filename(filename)
-        if not check[0]:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Critical)
-            msg.setText("Saving Error")
-            msg.setInformativeText(check[1])
-            msg.setWindowTitle("Error")
-            msg.exec_()
-        else:
-            if check[1] == 1:
-                filename += '.krf'
-            elif check[1] == 3:
-                confirm_window = QMessageBox
-                ret = confirm_window.question(self, 'Question', "You entered a custom filename. Use '.krf' instead?",
-                                              confirm_window.Yes | confirm_window.No)
-                if ret == confirm_window.Yes:
-                    filename = filename.split('.')[0] + '.krf'
-            with open(filename, 'wb') as f:
-                pickle.dump(self.events, f)
+        filename, ok = QFileDialog.getSaveFileName(self, 'Select file', '',
+                                                   'Key Recorder File (*.krf);;All files (*) ')  # Key Recorder File
+        if not ok or len(filename.split('.')) != 2:
+            return 0
+        with open(filename, 'wb') as f:
+            pickle.dump(self.events, f)
 
     # ===============================================================
 
