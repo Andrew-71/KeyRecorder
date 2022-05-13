@@ -1,0 +1,4 @@
+{"save_to_file_btn": {"en": "Save file", "ru": "Сохранить файл"}, "open_from_file_btn": {"en": "Open file", "ru": "Открыть файл"}, 
+"tab_1": {"en": "Short view", "ru": "Простой вид"}, "tab_2": {"en": "Advanced view", "ru": "Расширенный вид"},
+"toggle_recording_btn": {"en": {"start": "Start recording", "end": "Stop recording"}, "ru": {"start": "Начать запись", "end": "Остановить запись"}},
+"clear_recording_btn": {"en": "Clear recording", "ru": "Очистить запись"}}
