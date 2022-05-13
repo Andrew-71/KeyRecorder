@@ -1,11 +1,12 @@
 import sys
-import time
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, QFileDialog, QMessageBox
 
 import keyboard
 import mouse
+
+import pickle
 
 
 # Check that a filename is valid
@@ -45,6 +46,7 @@ class MainWindow(QMainWindow):
         uic.loadUi('app_ui.ui', self)  # Load in UI  TODO: Replace with a class
 
         self.events = []
+        self.is_recording = False
 
         self.configure_buttons()
 
@@ -52,27 +54,31 @@ class MainWindow(QMainWindow):
         self.open_from_file_btn.clicked.connect(self.open_file)
         self.save_to_file_btn.clicked.connect(self.save_file)
 
-        self.start_recording_btn.clicked.connect(self.start_recording)
-        self.stop_recording_btn.clicked.connect(self.stop_recording)
-        self.stop_recording_btn.setEnabled(False)
         self.clear_recording_btn.clicked.connect(self.clear_recording)
+        self.toggle_recording_btn.clicked.connect(self.toggle_recording)
 
         self.play_btn.clicked.connect(self.play_recording)
 
+        self.setWindowTitle('KeyRecorder')
+
     # Everything related to recording ===============================
 
-    def start_recording(self):
-        mouse.hook(self.events.append)  # starting the mouse recording
-        keyboard.hook(self.events.append)
-        self.stop_recording_btn.setEnabled(True)
-        self.start_recording_btn.setEnabled(False)
+    def toggle_recording(self):
+        if not self.is_recording:
+            mouse.hook(self.events.append)  # starting the mouse recording
+            keyboard.hook(self.events.append)
+            self.is_recording = True
+            self.toggle_recording_btn.setText('Stop recording')
+        else:
+            mouse.unhook_all()
+            keyboard.unhook_all()
+            self.is_recording = False
+            self.toggle_recording_btn.setText('Start recording')
 
-    def stop_recording(self):
-        mouse.unhook_all()
-        keyboard.unhook_all()
-        self.refresh_list()
-        self.stop_recording_btn.setEnabled(False)
-        self.start_recording_btn.setEnabled(True)
+            # TODO: DO WE NEED THIS?
+            self.events = self.events[:-2]
+
+            self.refresh_list()
 
     def clear_recording(self):
         confirm_window = QMessageBox
@@ -100,44 +106,60 @@ class MainWindow(QMainWindow):
                                                    'Key Recorder File (*.krf);;All files (*) ')  # Key Recorder File
         if not ok or len(filename.split('.')) != 2:
             return 0
+        with open(filename, 'rb') as f:
+            self.events = pickle.load(f)
+        self.refresh_list()
 
     def save_file(self):
-        try:
-            filename = self.save_filename.text()
-            check = verify_filename(filename)
-            if not check[0]:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Critical)
-                msg.setText("Saving Error")
-                msg.setInformativeText(check[1])
-                msg.setWindowTitle("Error")
-                msg.exec_()
-            else:
-                if check[1] == 1:
-                    filename += '.krf'
-                elif check[1] == 3:
-                    confirm_window = QMessageBox
-                    ret = confirm_window.question(self, 'Question', "You entered a custom filename. Use '.krf' instead?",
-                                                  confirm_window.Yes | confirm_window.No)
-                    if ret == confirm_window.Yes:
-                        filename = filename.split('.')[0] + '.krf'
-                open(filename, 'w').write('test')
-        except Exception as e:
-            print(e)
+        filename = self.save_filename.text()
+        check = verify_filename(filename)
+        if not check[0]:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Saving Error")
+            msg.setInformativeText(check[1])
+            msg.setWindowTitle("Error")
+            msg.exec_()
+        else:
+            if check[1] == 1:
+                filename += '.krf'
+            elif check[1] == 3:
+                confirm_window = QMessageBox
+                ret = confirm_window.question(self, 'Question', "You entered a custom filename. Use '.krf' instead?",
+                                              confirm_window.Yes | confirm_window.No)
+                if ret == confirm_window.Yes:
+                    filename = filename.split('.')[0] + '.krf'
+            with open(filename, 'wb') as f:
+                pickle.dump(self.events, f)
 
     # ===============================================================
 
     def refresh_list(self):
         self.list.clear()
-        self.list.addItems(list(map(lambda x: x.__class__.__name__, self.events)))
+        self.list_advanced.clear()
 
+        short_view = []
+        long_view = []
+        current = []
+        for i in self.events:
+            long_view.append(str(i))
+            if i.__class__ != keyboard.KeyboardEvent and \
+                    (len(current) == 0 or (len(current) > 0 and i.__class__.__name__ == current[0])):
+                current.append(i.__class__.__name__)
+            else:
+                if len(current) > 0:
+                    short_view.append(f'{current[0]} ({len(current)})')
+                    current = []
+                short_view.append(i.__class__.__name__)
+        if len(current) > 0:
+            short_view.append(f'{current[0]} ({len(current)})')
 
+        self.list.addItems(short_view)
+        self.list_advanced.addItems(long_view)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-
-    # Open login window
 
     KeyRecorder = MainWindow()
     KeyRecorder.show()
