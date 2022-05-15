@@ -10,36 +10,6 @@ import mouse
 import pickle
 
 
-# Check that a filename is valid
-# True codes:
-# 1 == no extension
-# 2 == .krf extension
-# 3 == .custom extension, show warning
-# TODO: Bad verification, likely redundant checks or edge cases not accounted for
-def verify_filename(filename):
-    if len(filename) == 0:
-        return False, 'Empty filename'
-
-    if True in [x in '<>:;"/\\|?*\'' for x in filename]:
-        return False, 'Forbidden character, preferably only use Latin, Digits and Cyrillic'
-
-    with_extension = filename.split('.')
-
-    if len(with_extension) == 2:
-        if with_extension[0] == '' or with_extension[1] == '':
-            return False, 'Empty filename or extension'
-
-        if with_extension[1] != 'krf':
-            return True, 3
-        else:
-            return True, 2
-    elif len(with_extension) > 2:
-        return False, 'More than 1 extension'
-    elif len(with_extension) == 1 and '.' in filename:
-        return False, 'Empty extension'
-    return True, 1
-
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
