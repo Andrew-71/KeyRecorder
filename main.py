@@ -1,4 +1,5 @@
 import sys
+import time
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, QFileDialog, QMessageBox
@@ -7,36 +8,6 @@ import keyboard
 import mouse
 
 import pickle
-
-
-# Check that a filename is valid
-# True codes:
-# 1 == no extension
-# 2 == .krf extension
-# 3 == .custom extension, show warning
-# TODO: Bad verification, likely redundant checks or edge cases not accounted for
-def verify_filename(filename):
-    if len(filename) == 0:
-        return False, 'Empty filename'
-
-    if True in [x in '<>:;"/\\|?*\'' for x in filename]:
-        return False, 'Forbidden character, preferably only use Latin, Digits and Cyrillic'
-
-    with_extension = filename.split('.')
-
-    if len(with_extension) == 2:
-        if with_extension[0] == '' or with_extension[1] == '':
-            return False, 'Empty filename or extension'
-
-        if with_extension[1] != 'krf':
-            return True, 3
-        else:
-            return True, 2
-    elif len(with_extension) > 2:
-        return False, 'More than 1 extension'
-    elif len(with_extension) == 1 and '.' in filename:
-        return False, 'Empty extension'
-    return True, 1
 
 
 class MainWindow(QMainWindow):
@@ -65,8 +36,8 @@ class MainWindow(QMainWindow):
 
     def toggle_recording(self):
         if not self.is_recording:
-            mouse.hook(self.events.append)  # starting the mouse recording
-            keyboard.hook(self.events.append)
+            mouse.hook(self.add_item)
+            keyboard.hook(self.add_item)
             self.is_recording = True
             self.toggle_recording_btn.setText('Stop recording')
         else:
@@ -77,8 +48,8 @@ class MainWindow(QMainWindow):
 
             # TODO: DO WE NEED THIS?
             self.events = self.events[:-2]
-
             self.refresh_list()
+        self.toggle_buttons()
 
     def clear_recording(self):
         confirm_window = QMessageBox
@@ -97,6 +68,7 @@ class MainWindow(QMainWindow):
                 mouse.play(mouse_events)
                 mouse_events = []
                 keyboard.play([i])
+                time.sleep(self.typing_delay_spinbox.value())
         mouse.play(mouse_events)
 
     # File management ===============================================
@@ -111,28 +83,14 @@ class MainWindow(QMainWindow):
         self.refresh_list()
 
     def save_file(self):
-        filename = self.save_filename.text()
-        check = verify_filename(filename)
-        if not check[0]:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Critical)
-            msg.setText("Saving Error")
-            msg.setInformativeText(check[1])
-            msg.setWindowTitle("Error")
-            msg.exec_()
-        else:
-            if check[1] == 1:
-                filename += '.krf'
-            elif check[1] == 3:
-                confirm_window = QMessageBox
-                ret = confirm_window.question(self, 'Question', "You entered a custom filename. Use '.krf' instead?",
-                                              confirm_window.Yes | confirm_window.No)
-                if ret == confirm_window.Yes:
-                    filename = filename.split('.')[0] + '.krf'
-            with open(filename, 'wb') as f:
-                pickle.dump(self.events, f)
+        filename, ok = QFileDialog.getSaveFileName(self, 'Select file', '',
+                                                   'Key Recorder File (*.krf);;All files (*) ')  # Key Recorder File
+        if not ok or len(filename.split('.')) != 2:
+            return 0
+        with open(filename, 'wb') as f:
+            pickle.dump(self.events, f)
 
-    # ===============================================================
+    # List management ===============================================
 
     def refresh_list(self):
         self.list.clear()
@@ -156,6 +114,19 @@ class MainWindow(QMainWindow):
 
         self.list.addItems(short_view)
         self.list_advanced.addItems(long_view)
+
+    def add_item(self, item):
+        self.events.append(item)
+        self.list_advanced.addItem(str(item))
+
+    # ===============================================================
+
+    def toggle_buttons(self):
+        enabled = (not self.is_recording)
+        elements = [self.save_to_file_btn, self.open_from_file_btn,
+                    self.play_btn, self.clear_recording_btn, self.typing_delay_spinbox]
+        for i in elements:
+            i.setEnabled(enabled)
 
 
 if __name__ == '__main__':
