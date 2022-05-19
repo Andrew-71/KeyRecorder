@@ -1,4 +1,8 @@
-{"save_to_file_btn": {"en": "Save file", "ru": "Сохранить файл"}, "open_from_file_btn": {"en": "Open file", "ru": "Открыть файл"}, 
-"tab": {"en": "Short view", "ru": "Простой вид"}, "tab_2": {"en": "Advanced view", "ru": "Расширенный вид"},
-"toggle_recording_btn": {"en": {"start": "Start recording", "stop": "Stop recording"}, "ru": {"start": "Начать запись", "stop": "Остановить запись"}},
-"clear_recording_btn": {"en": "Clear recording", "ru": "Очистить запись"}}
+{"save_to_file_btn": {"en": "Save file", "ru": "Сохранить файл"},
+  "open_from_file_btn": {"en": "Open file", "ru": "Открыть файл"},
+  "tab": {"en": "Short view", "ru": "Простой вид"}, "tab_2": {"en": "Advanced view", "ru": "Расширенный вид"},
+  "toggle_recording_btn": {"en": {"start": "Start recording", "stop": "Stop recording"},
+    "ru": {"start": "Начать запись", "stop": "Остановить запись"}},
+  "clear_recording_btn": {"en": "Clear recording", "ru": "Очистить запись"}, "play_btn": {"en":  "Play recording",
+"ru":  "Проиграть запись"}, "typing_delay_label": {"en": "Typing delay (seconds)", "ru": "Задержка (секунды)"},
+"settings_btn": {"en": "Settings", "ru": "Настройки"}}

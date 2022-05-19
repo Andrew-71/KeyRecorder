@@ -10,6 +10,8 @@ import mouse
 
 import pickle
 
+from settings_window import SettingsWindow
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -18,10 +20,9 @@ class MainWindow(QMainWindow):
         uic.loadUi('app_ui.ui', self)  # Load in UI  TODO: Replace with a class
 
         # Load in user settings
-        with open('config.json') as json_file:
-            self.config = json.load(json_file)
-        with open('langauges.json') as json_file:
-            self.language_pack = json.load(json_file)
+        self.config = json.load(open('config.json', encoding="utf8"))
+        self.language_pack = json.load(open('languages.json', encoding="utf8"))
+        self.settings = SettingsWindow(self)
 
         self.events = []
         self.is_recording = False
@@ -41,6 +42,8 @@ class MainWindow(QMainWindow):
         self.typing_delay_spinbox.setValue(self.config['default_delay'])
 
         self.setWindowTitle('KeyRecorder')
+
+        self.settings_btn.clicked.connect(self.show_settings)
 
     # Recording management ==========================================
 
@@ -127,7 +130,7 @@ class MainWindow(QMainWindow):
 
     def add_item(self, item):
         self.events.append(item)
-        if (self.config['dunamic_refresh']):
+        if self.config['dynamic_refresh']:
             self.list_advanced.addItem(str(item))
 
     # UI management =================================================
@@ -141,10 +144,22 @@ class MainWindow(QMainWindow):
     # This function has not been tested and may contain errors
     def retranslate_ui(self):
         elements = [self.save_to_file_btn, self.open_from_file_btn,
-                    self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.tabWidget.tab, self.tabWidget.tab_2]
+                    self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn]
         for i in elements:
             i.setText(self.language_pack[i.objectName()][self.config['lang']])
+
+        self.tabWidget.setTabText(0, self.language_pack['tab'][self.config['lang']])
+        self.tabWidget.setTabText(1, self.language_pack['tab_2'][self.config['lang']])
+
         self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][('start' if not self.is_recording else 'stop')])
+
+    def show_settings(self):
+        self.settings.load_settings()
+        self.settings.show()
+
+    def reload_config(self):
+        self.config = json.load(open('config.json', encoding="utf8"))
+        self.retranslate_ui()
 
 
 if __name__ == '__main__':
