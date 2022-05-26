@@ -3,6 +3,7 @@ import sys
 import time
 
 from PyQt5 import uic
+from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, QFileDialog, QMessageBox
 
 import keyboard
@@ -11,6 +12,7 @@ import mouse
 import pickle
 
 from settings_window import SettingsWindow
+from playback_thread import PlaybackThread
 
 
 class MainWindow(QMainWindow):
@@ -53,15 +55,16 @@ class MainWindow(QMainWindow):
         self.toggle_buttons()
 
         if self.is_recording:
-            mouse.hook(self.add_item)
-            keyboard.hook(self.add_item)
-
+            if self.config['dynamic_refresh']:
+                mouse.hook(self.add_item)
+                keyboard.hook(self.add_item)
+            else:
+                mouse.hook(self.events.append)
+                keyboard.hook(self.events.append)
         else:
             mouse.unhook_all()
             keyboard.unhook_all()
-
-            # self.events = self.events[:-2]  # Prevent program from restarting recording at the end of playback
-            del self.events[-3:]
+            del self.events[-3:]  # Prevent program from restarting recording at the end of playback
             self.refresh_list()
 
     def clear_recording(self):
@@ -73,16 +76,9 @@ class MainWindow(QMainWindow):
             self.refresh_list()
 
     def play_recording(self):
-        mouse_events = []
-        for i in self.events:
-            if i.__class__ != keyboard.KeyboardEvent:
-                mouse_events.append(i)
-            else:
-                mouse.play(mouse_events)
-                mouse_events = []
-                keyboard.play([i])
-                time.sleep(self.typing_delay_spinbox.value())
-        mouse.play(mouse_events)
+        pool = QThreadPool.globalInstance()
+        runnable = PlaybackThread(self.events, self.typing_delay_spinbox.value())
+        pool.start(runnable)
 
     # File management ===============================================
 
