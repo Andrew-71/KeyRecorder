@@ -1,0 +1,43 @@
+import json
+
+from PyQt5 import uic
+from PyQt5.QtWidgets import QWidget
+
+
+class SettingsWindow(QWidget):
+    def __init__(self, parent):
+        super().__init__()
+
+        uic.loadUi('settings_ui.ui', self)  # Load in UI  TODO: Replace with a class
+        self.setWindowTitle('Settings')
+
+        self.parent = parent
+        self.save_btn.clicked.connect(self.save_settings)
+
+    def load_settings(self):
+        if self.parent.config['lang'] == 'ru':
+            self.russian_radio.setChecked(True)
+        else:
+            self.english_radio.setChecked(True)
+
+        if self.parent.config['dynamic_refresh']:
+            self.dynamic_refresh_checkbox.setChecked(True)
+        else:
+            self.dynamic_refresh_checkbox.setChecked(False)
+
+        self.default_delay_spinbox.setValue(self.parent.config['default_delay'])
+
+    def save_settings(self):
+        if self.russian_radio.isChecked():
+            lang = 'ru'
+        else:
+            lang = 'en'
+
+        new_cfg = {"lang": lang,
+                   "default_delay": self.default_delay_spinbox.value(),
+                   "dynamic_refresh": self.dynamic_refresh_checkbox.isChecked()}
+
+        with open("config.json", "w") as write_file:
+            json.dump(new_cfg, write_file)
+
+        self.parent.reload_config()
