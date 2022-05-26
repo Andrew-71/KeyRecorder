@@ -126,8 +126,7 @@ class MainWindow(QMainWindow):
 
     def add_item(self, item):
         self.events.append(item)
-        if self.config['dynamic_refresh']:
-            self.list_advanced.addItem(str(item))
+        self.list_advanced.addItem(str(item))
 
     # UI management =================================================
 
