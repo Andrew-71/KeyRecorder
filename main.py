@@ -1,13 +1,18 @@
+import json
 import sys
 import time
 
 from PyQt5 import uic
+from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, QFileDialog, QMessageBox
 
 import keyboard
 import mouse
 
 import pickle
+
+from settings_window import SettingsWindow
+from playback_thread import PlaybackThread
 
 
 class MainWindow(QMainWindow):
@@ -16,10 +21,16 @@ class MainWindow(QMainWindow):
 
         uic.loadUi('app_ui.ui', self)  # Load in UI  TODO: Replace with a class
 
+        # Load in user settings
+        self.config = json.load(open('config.json', encoding="utf8"))
+        self.language_pack = json.load(open('languages.json', encoding="utf8"))
+        self.settings = SettingsWindow(self)
+
         self.events = []
         self.is_recording = False
 
         self.configure_buttons()
+        self.retranslate_ui()
 
     def configure_buttons(self):
         self.open_from_file_btn.clicked.connect(self.open_file)
@@ -30,46 +41,44 @@ class MainWindow(QMainWindow):
 
         self.play_btn.clicked.connect(self.play_recording)
 
+        self.typing_delay_spinbox.setValue(self.config['default_delay'])
+
         self.setWindowTitle('KeyRecorder')
 
-    # Everything related to recording ===============================
+        self.settings_btn.clicked.connect(self.show_settings)
+
+    # Recording management ==========================================
 
     def toggle_recording(self):
-        if not self.is_recording:
-            mouse.hook(self.add_item)
-            keyboard.hook(self.add_item)
-            self.is_recording = True
-            self.toggle_recording_btn.setText('Stop recording')
+        self.is_recording = (not self.is_recording)
+        self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][('start' if not self.is_recording else 'stop')])
+        self.toggle_buttons()
+
+        if self.is_recording:
+            if self.config['dynamic_refresh']:
+                mouse.hook(self.add_item)
+                keyboard.hook(self.add_item)
+            else:
+                mouse.hook(self.events.append)
+                keyboard.hook(self.events.append)
         else:
             mouse.unhook_all()
             keyboard.unhook_all()
-            self.is_recording = False
-            self.toggle_recording_btn.setText('Start recording')
-
-            # TODO: DO WE NEED THIS?
-            self.events = self.events[:-2]
+            del self.events[-3:]  # Prevent program from restarting recording at the end of playback
             self.refresh_list()
-        self.toggle_buttons()
 
     def clear_recording(self):
         confirm_window = QMessageBox
         ret = confirm_window.question(self, 'Question', "Are you sure you want to clear recording?",
                                       confirm_window.Yes | confirm_window.No)
         if ret == confirm_window.Yes:
-            self.events = []
+            self.events.clear()
             self.refresh_list()
 
     def play_recording(self):
-        mouse_events = []
-        for i in self.events:
-            if i.__class__ != keyboard.KeyboardEvent:
-                mouse_events.append(i)
-            else:
-                mouse.play(mouse_events)
-                mouse_events = []
-                keyboard.play([i])
-                time.sleep(self.typing_delay_spinbox.value())
-        mouse.play(mouse_events)
+        pool = QThreadPool.globalInstance()
+        runnable = PlaybackThread(self.events, self.typing_delay_spinbox.value())
+        pool.start(runnable)
 
     # File management ===============================================
 
@@ -119,14 +128,33 @@ class MainWindow(QMainWindow):
         self.events.append(item)
         self.list_advanced.addItem(str(item))
 
-    # ===============================================================
+    # UI management =================================================
 
     def toggle_buttons(self):
-        enabled = (not self.is_recording)
         elements = [self.save_to_file_btn, self.open_from_file_btn,
                     self.play_btn, self.clear_recording_btn, self.typing_delay_spinbox]
         for i in elements:
-            i.setEnabled(enabled)
+            i.setEnabled(not self.is_recording)
+    
+    # This function has not been tested and may contain errors
+    def retranslate_ui(self):
+        elements = [self.save_to_file_btn, self.open_from_file_btn,
+                    self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn]
+        for i in elements:
+            i.setText(self.language_pack[i.objectName()][self.config['lang']])
+
+        self.tabWidget.setTabText(0, self.language_pack['tab'][self.config['lang']])
+        self.tabWidget.setTabText(1, self.language_pack['tab_2'][self.config['lang']])
+
+        self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][('start' if not self.is_recording else 'stop')])
+
+    def show_settings(self):
+        self.settings.load_settings()
+        self.settings.show()
+
+    def reload_config(self):
+        self.config = json.load(open('config.json', encoding="utf8"))
+        self.retranslate_ui()
 
 
 if __name__ == '__main__':
