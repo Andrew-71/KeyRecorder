@@ -13,6 +13,7 @@ import pickle
 
 from settings_window import SettingsWindow
 from playback_thread import PlaybackThread
+from resolution_change_window import ResolutionWindow
 
 
 class MainWindow(QMainWindow):
@@ -25,6 +26,7 @@ class MainWindow(QMainWindow):
         self.config = json.load(open('config.json', encoding="utf8"))
         self.language_pack = json.load(open('languages.json', encoding="utf8"))
         self.settings = SettingsWindow(self)
+        self.res_window = ResolutionWindow(self)
 
         self.events = []
         self.is_recording = False
@@ -46,6 +48,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('KeyRecorder')
 
         self.settings_btn.clicked.connect(self.show_settings)
+        self.change_res_btn.clicked.connect(self.show_resolution)
 
     # Recording management ==========================================
 
@@ -139,7 +142,8 @@ class MainWindow(QMainWindow):
     # This function has not been tested and may contain errors
     def retranslate_ui(self):
         elements = [self.save_to_file_btn, self.open_from_file_btn,
-                    self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn]
+                    self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn,
+                    self.change_res_btn]
         for i in elements:
             i.setText(self.language_pack[i.objectName()][self.config['lang']])
 
@@ -155,6 +159,9 @@ class MainWindow(QMainWindow):
     def reload_config(self):
         self.config = json.load(open('config.json', encoding="utf8"))
         self.retranslate_ui()
+
+    def show_resolution(self):
+        self.res_window.show()
 
 
 if __name__ == '__main__':

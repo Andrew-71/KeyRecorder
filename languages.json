@@ -5,4 +5,5 @@
     "ru": {"start": "Начать запись", "stop": "Остановить запись"}},
   "clear_recording_btn": {"en": "Clear recording", "ru": "Очистить запись"}, "play_btn": {"en":  "Play recording",
 "ru":  "Проиграть запись"}, "typing_delay_label": {"en": "Typing delay (seconds)", "ru": "Задержка (секунды)"},
-"settings_btn": {"en": "Settings", "ru": "Настройки"}}
+"settings_btn": {"en": "Settings", "ru": "Настройки"},
+  "change_res_btn":  {"en": "Change resolution", "ru": "Изменить разрешение"}}
