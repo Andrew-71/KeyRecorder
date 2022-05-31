@@ -8,7 +8,7 @@ import time
 class PlaybackThread(QRunnable):
     def __init__(self, parent, events, typing_delay):
         super().__init__()
-        self.events = events
+        self.events = [i['event'] for i in events]
         self.typing_delay = typing_delay
         self.parent = parent
 

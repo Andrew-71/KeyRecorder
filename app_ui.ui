@@ -153,6 +153,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="test_btn">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>[TEST] Delete from app</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="clear_recording_btn">
          <property name="enabled">
           <bool>false</bool>
