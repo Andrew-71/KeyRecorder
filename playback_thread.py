@@ -6,10 +6,11 @@ import time
 
 
 class PlaybackThread(QRunnable):
-    def __init__(self, events, typing_delay):
+    def __init__(self, parent, events, typing_delay):
         super().__init__()
         self.events = events
         self.typing_delay = typing_delay
+        self.parent = parent
 
     def run(self):
         mouse_events = []
@@ -22,3 +23,5 @@ class PlaybackThread(QRunnable):
                 keyboard.play([i])
                 time.sleep(self.typing_delay)
         mouse.play(mouse_events)
+        self.parent.toggle_buttons()
+

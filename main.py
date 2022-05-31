@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
 
     def play_recording(self):
         pool = QThreadPool.globalInstance()
-        runnable = PlaybackThread(self.events, self.typing_delay_spinbox.value())
+        runnable = PlaybackThread(self, self.events, self.typing_delay_spinbox.value())
         pool.start(runnable)
 
     # File management ===============================================
@@ -105,6 +105,11 @@ class MainWindow(QMainWindow):
     # List management ===============================================
 
     def refresh_list(self):
+        enable_buttons = len(self.events) > 1
+        self.clear_recording_btn.setEnabled(enable_buttons)
+        self.save_to_file_btn.setEnabled(enable_buttons)
+        self.play_btn.setEnabled(enable_buttons)
+
         self.list.clear()
         self.list_advanced.clear()
 
@@ -133,11 +138,14 @@ class MainWindow(QMainWindow):
 
     # UI management =================================================
 
-    def toggle_buttons(self):
+    def toggle_buttons(self, enabled=None):
+        if enabled is None:
+            enabled = not self.is_recording
         elements = [self.save_to_file_btn, self.open_from_file_btn,
-                    self.play_btn, self.clear_recording_btn, self.typing_delay_spinbox]
+                    self.play_btn, self.clear_recording_btn, self.typing_delay_spinbox,
+                    self.change_res_btn, self.settings_btn]
         for i in elements:
-            i.setEnabled(not self.is_recording)
+            i.setEnabled(enabled)
     
     # This function has not been tested and may contain errors
     def retranslate_ui(self):
