@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
 
         # Load in user settings
         self.config = json.load(open('config.json', encoding="utf8"))
-        self.language_pack = json.load(open('languages.json', encoding="utf8"))
+        self.language_pack = json.load(open('languages.json', encoding="utf8"))['main']
         self.settings = SettingsWindow(self)
         self.res_window = ResolutionWindow(self)
         self.delete_manager = SelectDeleteWindowWindow(self)
@@ -152,7 +152,6 @@ class MainWindow(QMainWindow):
         for i in elements:
             i.setEnabled(enabled)
     
-    # This function has not been tested and may contain errors
     def retranslate_ui(self):
         elements = [self.save_to_file_btn, self.open_from_file_btn,
                     self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn,
@@ -164,6 +163,9 @@ class MainWindow(QMainWindow):
         self.tabWidget.setTabText(1, self.language_pack['tab_2'][self.config['lang']])
 
         self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][('start' if not self.is_recording else 'stop')])
+
+        for i in [self.settings, self.delete_manager, self.res_window]:
+            i.retranslate_ui()
 
     def show_settings(self):
         self.settings.load_settings()

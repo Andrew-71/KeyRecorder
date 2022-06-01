@@ -1,3 +1,5 @@
+import json
+
 import keyboard
 import mouse
 from PyQt5 import uic
@@ -14,8 +16,7 @@ class SelectDeleteWindowWindow(QWidget):
         self.parent = parent
         self.cancel_btn.clicked.connect(self.hide)
         self.confirm_btn.clicked.connect(self.delete_selected)
-
-       # self.show_options()
+        self.language_pack = json.load(open('languages.json', encoding="utf8"))['delete_app_events']
 
     def show_options(self):
         self.select_box.clear()
@@ -40,3 +41,8 @@ class SelectDeleteWindowWindow(QWidget):
         self.parent.refresh_list()
 
         self.hide()
+
+    def retranslate_ui(self):
+        elements = [self.confirm_btn, self.cancel_btn, self.label]
+        for i in elements:
+            i.setText(self.language_pack[i.objectName()][self.parent.config['lang']])

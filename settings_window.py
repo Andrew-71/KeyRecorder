@@ -14,6 +14,8 @@ class SettingsWindow(QWidget):
         self.parent = parent
         self.save_btn.clicked.connect(self.save_settings)
 
+        self.language_pack = json.load(open('languages.json', encoding="utf8"))['settings']
+
     def load_settings(self):
         if self.parent.config['lang'] == 'ru':
             self.russian_radio.setChecked(True)
@@ -41,3 +43,9 @@ class SettingsWindow(QWidget):
             json.dump(new_cfg, write_file)
 
         self.parent.reload_config()
+
+    def retranslate_ui(self):
+        elements = [self.save_btn, self.settings_label,
+                    self.language_label, self.default_delay_label, self.dynamic_refresh_checkbox]
+        for i in elements:
+            i.setText(self.language_pack[i.objectName()][self.parent.config['lang']])
