@@ -6,4 +6,5 @@
   "clear_recording_btn": {"en": "Clear recording", "ru": "Очистить запись"}, "play_btn": {"en":  "Play recording",
 "ru":  "Проиграть запись"}, "typing_delay_label": {"en": "Typing delay (seconds)", "ru": "Задержка (секунды)"},
 "settings_btn": {"en": "Settings", "ru": "Настройки"},
-  "change_res_btn":  {"en": "Change resolution", "ru": "Изменить разрешение"}}
+  "change_res_btn":  {"en": "Change resolution", "ru": "Изменить разрешение"},
+"clear_specific_recording_btn": {"en": "Clear from specific app", "ru": "Очистить запись от 1 приложения"}}

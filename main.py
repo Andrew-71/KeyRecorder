@@ -51,9 +51,9 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle('KeyRecorder')
 
-        self.settings_btn.clicked.connect(self.show_settings)
         self.change_res_btn.clicked.connect(self.show_resolution)
-        self.test_btn.clicked.connect(self.show_delete)
+        self.settings_btn.clicked.connect(self.show_settings)
+        self.clear_specific_recording_btn.clicked.connect(self.show_delete)
 
     # Recording management ==========================================
 
@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
         self.clear_recording_btn.setEnabled(enable_buttons)
         self.save_to_file_btn.setEnabled(enable_buttons)
         self.play_btn.setEnabled(enable_buttons)
-        self.test_btn.setEnabled(enable_buttons)
+        self.clear_specific_recording_btn.setEnabled(enable_buttons)
 
         self.list.clear()
         self.list_advanced.clear()
@@ -141,12 +141,14 @@ class MainWindow(QMainWindow):
 
     # UI management =================================================
 
-    def toggle_buttons(self, enabled=None):
+    def toggle_buttons(self, enabled=None, include_stop=False):
         if enabled is None:
             enabled = not self.is_recording
         elements = [self.save_to_file_btn, self.open_from_file_btn,
                     self.play_btn, self.clear_recording_btn, self.typing_delay_spinbox,
-                    self.change_res_btn, self.settings_btn]
+                    self.change_res_btn, self.settings_btn, self.clear_specific_recording_btn]
+        if include_stop:
+            elements.append(self.toggle_recording_btn)
         for i in elements:
             i.setEnabled(enabled)
     
@@ -154,7 +156,7 @@ class MainWindow(QMainWindow):
     def retranslate_ui(self):
         elements = [self.save_to_file_btn, self.open_from_file_btn,
                     self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn,
-                    self.change_res_btn]
+                    self.change_res_btn, self.clear_specific_recording_btn]
         for i in elements:
             i.setText(self.language_pack[i.objectName()][self.config['lang']])
 
