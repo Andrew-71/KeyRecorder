@@ -11,9 +11,12 @@ import mouse
 
 import pickle
 
+from win32gui import GetWindowText, GetForegroundWindow
+
 from settings_window import SettingsWindow
 from playback_thread import PlaybackThread
 from resolution_change_window import ResolutionWindow
+from delete_window_events import SelectDeleteWindowWindow
 
 
 class MainWindow(QMainWindow):
@@ -24,9 +27,10 @@ class MainWindow(QMainWindow):
 
         # Load in user settings
         self.config = json.load(open('config.json', encoding="utf8"))
-        self.language_pack = json.load(open('languages.json', encoding="utf8"))
+        self.language_pack = json.load(open('languages.json', encoding="utf8"))['main']
         self.settings = SettingsWindow(self)
         self.res_window = ResolutionWindow(self)
+        self.delete_manager = SelectDeleteWindowWindow(self)
 
         self.events = []
         self.is_recording = False
@@ -47,8 +51,9 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle('KeyRecorder')
 
-        self.settings_btn.clicked.connect(self.show_settings)
         self.change_res_btn.clicked.connect(self.show_resolution)
+        self.settings_btn.clicked.connect(self.show_settings)
+        self.clear_specific_recording_btn.clicked.connect(self.show_delete)
 
     # Recording management ==========================================
 
@@ -58,12 +63,8 @@ class MainWindow(QMainWindow):
         self.toggle_buttons()
 
         if self.is_recording:
-            if self.config['dynamic_refresh']:
-                mouse.hook(self.add_item)
-                keyboard.hook(self.add_item)
-            else:
-                mouse.hook(self.events.append)
-                keyboard.hook(self.events.append)
+            mouse.hook(self.add_item)
+            keyboard.hook(self.add_item)
         else:
             mouse.unhook_all()
             keyboard.unhook_all()
@@ -109,23 +110,24 @@ class MainWindow(QMainWindow):
         self.clear_recording_btn.setEnabled(enable_buttons)
         self.save_to_file_btn.setEnabled(enable_buttons)
         self.play_btn.setEnabled(enable_buttons)
+        self.clear_specific_recording_btn.setEnabled(enable_buttons)
 
         self.list.clear()
         self.list_advanced.clear()
 
-        short_view = []
+        short_view = [f'Total: {len(self.events)} events\n']
         long_view = []
         current = []
         for i in self.events:
             long_view.append(str(i))
-            if i.__class__ != keyboard.KeyboardEvent and \
-                    (len(current) == 0 or (len(current) > 0 and i.__class__.__name__ == current[0])):
-                current.append(i.__class__.__name__)
+            if i['event'].__class__ != keyboard.KeyboardEvent and \
+                    (len(current) == 0 or (len(current) > 0 and i['event'].__class__.__name__ == current[0])):
+                current.append(i['event'].__class__.__name__)
             else:
                 if len(current) > 0:
                     short_view.append(f'{current[0]} ({len(current)})')
                     current = []
-                short_view.append(i.__class__.__name__)
+                short_view.append(i['event'].__class__.__name__)
         if len(current) > 0:
             short_view.append(f'{current[0]} ({len(current)})')
 
@@ -133,25 +135,27 @@ class MainWindow(QMainWindow):
         self.list_advanced.addItems(long_view)
 
     def add_item(self, item):
-        self.events.append(item)
-        self.list_advanced.addItem(str(item))
+        self.events.append({'event': item, 'window': GetWindowText(GetForegroundWindow())})
+        if self.config['dynamic_refresh']:
+            self.list_advanced.addItem(str({'event': item, 'window': GetWindowText(GetForegroundWindow())}))
 
     # UI management =================================================
 
-    def toggle_buttons(self, enabled=None):
+    def toggle_buttons(self, enabled=None, include_stop=False):
         if enabled is None:
             enabled = not self.is_recording
         elements = [self.save_to_file_btn, self.open_from_file_btn,
                     self.play_btn, self.clear_recording_btn, self.typing_delay_spinbox,
-                    self.change_res_btn, self.settings_btn]
+                    self.change_res_btn, self.settings_btn, self.clear_specific_recording_btn]
+        if include_stop:
+            elements.append(self.toggle_recording_btn)
         for i in elements:
             i.setEnabled(enabled)
     
-    # This function has not been tested and may contain errors
     def retranslate_ui(self):
         elements = [self.save_to_file_btn, self.open_from_file_btn,
                     self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn,
-                    self.change_res_btn]
+                    self.change_res_btn, self.clear_specific_recording_btn]
         for i in elements:
             i.setText(self.language_pack[i.objectName()][self.config['lang']])
 
@@ -159,6 +163,9 @@ class MainWindow(QMainWindow):
         self.tabWidget.setTabText(1, self.language_pack['tab_2'][self.config['lang']])
 
         self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][('start' if not self.is_recording else 'stop')])
+
+        for i in [self.settings, self.delete_manager, self.res_window]:
+            i.retranslate_ui()
 
     def show_settings(self):
         self.settings.load_settings()
@@ -170,6 +177,10 @@ class MainWindow(QMainWindow):
 
     def show_resolution(self):
         self.res_window.show()
+
+    def show_delete(self):
+        self.delete_manager.show_options()
+        self.delete_manager.show()
 
 
 if __name__ == '__main__':

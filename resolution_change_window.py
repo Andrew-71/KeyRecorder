@@ -1,3 +1,5 @@
+import json
+
 import keyboard
 import mouse
 from PyQt5 import uic
@@ -16,6 +18,8 @@ class ResolutionWindow(QWidget):
 
         self.custom_input_check.stateChanged.connect(self.custom_in_switch)
         self.custom_output_check.stateChanged.connect(self.custom_out_switch)
+
+        self.language_pack = json.load(open('languages.json', encoding="utf8"))['resolution_window']
 
     def custom_out_switch(self):
         self.output_select.setEnabled(not self.output_select.isEnabled())
@@ -43,3 +47,9 @@ class ResolutionWindow(QWidget):
         new_events = [mouse.MoveEvent(x=int(i.x * ratio_w), y=int(i.y * ratio_h), time=i.time) if i.__class__ != keyboard.KeyboardEvent else i for i in self.parent.events]
         self.parent.events = new_events
         self.parent.refresh_list()
+
+    def retranslate_ui(self):
+        elements = [self.label, self.original_res_label, self.new_res_label,
+                    self.custom_input_check, self.custom_output_check, self.change_res_btn]
+        for i in elements:
+            i.setText(self.language_pack[i.objectName()][self.parent.config['lang']])

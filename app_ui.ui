@@ -97,7 +97,7 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>100</width>
+             <width>97</width>
              <height>50</height>
             </size>
            </property>
@@ -119,7 +119,7 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>100</width>
+             <width>97</width>
              <height>50</height>
             </size>
            </property>
@@ -149,6 +149,31 @@
          </property>
          <property name="text">
           <string>Start recording</string>
+         </property>
+         <property name="shortcut">
+          <string>Space, Space</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="clear_specific_recording_btn">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Clear from specific app</string>
          </property>
         </widget>
        </item>
