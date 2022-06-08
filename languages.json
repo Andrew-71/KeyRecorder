@@ -103,14 +103,6 @@
       "ru": "Смена разрешения",
       "en": "Resolution change"
     },
-    "original_res_label": {
-      "ru": "Изначальное разрешение",
-      "en": "Original resolution"
-    },
-    "custom_input_check": {
-      "ru": "Своё",
-      "en": "Custom"
-    },
     "change_res_btn": {
       "ru": "Изменить разрешение",
       "en": "Change resolution"
@@ -122,6 +114,10 @@
     "custom_output_check": {
       "ru": "Своё",
       "en": "Custom"
+    },
+    "monitor_res_btn": {
+      "ru": "Монитора",
+      "en": "Monitor's"
     }
   }
 }

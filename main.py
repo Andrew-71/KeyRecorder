@@ -12,12 +12,14 @@ import mouse
 import pickle
 
 from win32gui import GetWindowText, GetForegroundWindow
+from win32api import GetSystemMetrics
 
 from settings_window import SettingsWindow
 from playback_thread import PlaybackThread
 from resolution_change_window import ResolutionWindow
 from delete_window_events import SelectDeleteWindowWindow
 
+from resolution_management_utils import resize, check_compatibility
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -80,9 +82,20 @@ class MainWindow(QMainWindow):
             self.refresh_list()
 
     def play_recording(self):
-        pool = QThreadPool.globalInstance()
-        runnable = PlaybackThread(self, self.events, self.typing_delay_spinbox.value())
-        pool.start(runnable)
+        check = check_compatibility(self.events)
+        if check == 'full' or (check == 'partial' and self.config['auto_compatibility']):
+            if check == 'partial':
+                self.events = resize(self.events)
+            pool = QThreadPool.globalInstance()
+            runnable = PlaybackThread(self, self.events, self.typing_delay_spinbox.value())
+            pool.start(runnable)
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Can't run")
+            msg.setInformativeText('You need to convert all events to your monitor\'s resolution first')
+            msg.setWindowTitle("Error")
+            msg.exec_()
 
     # File management ===============================================
 
@@ -135,7 +148,7 @@ class MainWindow(QMainWindow):
         self.list_advanced.addItems(long_view)
 
     def add_item(self, item):
-        self.events.append({'event': item, 'window': GetWindowText(GetForegroundWindow())})
+        self.events.append({'event': item, 'window': GetWindowText(GetForegroundWindow()), 'resolution': {'w': GetSystemMetrics(0), 'h': GetSystemMetrics(1)}})
         if self.config['dynamic_refresh']:
             self.list_advanced.addItem(str({'event': item, 'window': GetWindowText(GetForegroundWindow())}))
 
