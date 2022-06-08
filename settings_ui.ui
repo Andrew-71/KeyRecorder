@@ -110,6 +110,20 @@
      </widget>
     </item>
     <item>
+     <widget class="QCheckBox" name="auto_compatibility_checkbox">
+      <property name="text">
+       <string>Auto launch playback in compatibility mode when possible</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="stop_unexpected_playback_checkbox">
+      <property name="text">
+       <string>Stop playback in unexpected situation</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QPushButton" name="save_btn">
       <property name="minimumSize">
        <size>

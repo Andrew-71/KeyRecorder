@@ -72,6 +72,14 @@
     "save_btn": {
       "ru": "Сохранить",
       "en": "Save"
+    },
+    "auto_compatibility_checkbox": {
+      "ru": "Автоматически проигрывать запись в режиме совместимости когда возможно",
+      "en": "Auto launch playback in compatibility mode when possible"
+    },
+    "stop_unexpected_playback_checkbox": {
+      "ru": "Остонавливать проигрываение в неожиданных ситуациях",
+      "en": "Stop playback in unexpected situation"
     }
   },
 
