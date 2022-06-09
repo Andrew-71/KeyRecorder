@@ -21,6 +21,7 @@ from delete_window_events import SelectDeleteWindowWindow
 
 from resolution_management_utils import resize, check_compatibility
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -39,6 +40,7 @@ class MainWindow(QMainWindow):
 
         self.configure_buttons()
         self.retranslate_ui()
+        self.refresh_list()
 
     def configure_buttons(self):
         self.open_from_file_btn.clicked.connect(self.open_file)
@@ -61,7 +63,8 @@ class MainWindow(QMainWindow):
 
     def toggle_recording(self):
         self.is_recording = (not self.is_recording)
-        self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][('start' if not self.is_recording else 'stop')])
+        self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][
+                                              ('start' if not self.is_recording else 'stop')])
         self.toggle_buttons()
 
         if self.is_recording:
@@ -83,9 +86,23 @@ class MainWindow(QMainWindow):
 
     def play_recording(self):
         check = check_compatibility(self.events)
-        if check == 'full' or (check == 'partial' and self.config['auto_compatibility']):
-            if check == 'partial':
+        if check in ('full', 'partial'):
+
+            confirm = False
+            if not self.config['auto_compatibility'] and check == 'partial':
+                confirm_window = QMessageBox
+                ret = confirm_window.question(self, 'Can\'t run',
+                                              "Not all events are same resolution as your monitor's\n"
+                                              "However we could run it in compatibility mode instead.\nDo that?",
+                                              confirm_window.Yes | confirm_window.No)
+                if ret == confirm_window.Yes:
+                    confirm = True
+                else:
+                    return
+            if confirm or self.config['auto_compatibility']:
                 self.events = resize(self.events)
+                self.refresh_list()
+
             pool = QThreadPool.globalInstance()
             runnable = PlaybackThread(self, self.events, self.typing_delay_spinbox.value())
             pool.start(runnable)
@@ -93,7 +110,7 @@ class MainWindow(QMainWindow):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
             msg.setText("Can't run")
-            msg.setInformativeText('You need to convert all events to your monitor\'s resolution first')
+            msg.setInformativeText('You need to convert all events to match your monitor\'s resolution first')
             msg.setWindowTitle("Error")
             msg.exec_()
 
@@ -124,6 +141,7 @@ class MainWindow(QMainWindow):
         self.save_to_file_btn.setEnabled(enable_buttons)
         self.play_btn.setEnabled(enable_buttons)
         self.clear_specific_recording_btn.setEnabled(enable_buttons)
+        self.change_res_btn.setEnabled(enable_buttons)
 
         self.list.clear()
         self.list_advanced.clear()
@@ -148,7 +166,8 @@ class MainWindow(QMainWindow):
         self.list_advanced.addItems(long_view)
 
     def add_item(self, item):
-        self.events.append({'event': item, 'window': GetWindowText(GetForegroundWindow()), 'resolution': {'w': GetSystemMetrics(0), 'h': GetSystemMetrics(1)}})
+        self.events.append({'event': item, 'window': GetWindowText(GetForegroundWindow()),
+                            'resolution': {'w': GetSystemMetrics(0), 'h': GetSystemMetrics(1)}})
         if self.config['dynamic_refresh']:
             self.list_advanced.addItem(str({'event': item, 'window': GetWindowText(GetForegroundWindow())}))
 
@@ -164,7 +183,7 @@ class MainWindow(QMainWindow):
             elements.append(self.toggle_recording_btn)
         for i in elements:
             i.setEnabled(enabled)
-    
+
     def retranslate_ui(self):
         elements = [self.save_to_file_btn, self.open_from_file_btn,
                     self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn,
@@ -175,7 +194,8 @@ class MainWindow(QMainWindow):
         self.tabWidget.setTabText(0, self.language_pack['tab'][self.config['lang']])
         self.tabWidget.setTabText(1, self.language_pack['tab_2'][self.config['lang']])
 
-        self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][('start' if not self.is_recording else 'stop')])
+        self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][
+                                              ('start' if not self.is_recording else 'stop')])
 
         for i in [self.settings, self.delete_manager, self.res_window]:
             i.retranslate_ui()

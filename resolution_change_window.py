@@ -45,6 +45,7 @@ class ResolutionWindow(QWidget):
         except Exception as e:
             print(e)
         self.parent.refresh_list()
+        self.hide()
 
     def retranslate_ui(self):
         elements = [self.label, self.new_res_label, self.custom_output_check, self.change_res_btn,  self.monitor_res_btn]
