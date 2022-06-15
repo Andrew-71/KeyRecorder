@@ -33,7 +33,6 @@ class PlaybackThread(QRunnable):
                 # TODO: Some apps love to change name of window dynamically. Which might break our app sometimes
                 if i['window'] != GetWindowText(GetForegroundWindow()) and self.parent.config['stop_unexpected_playback']:
                     self.parent.toggle_buttons(enabled=True, include_stop=True)
-                    self.parent.alias_def()
                     return
         mouse.play(mouse_events)
         self.parent.toggle_buttons(enabled=True, include_stop=True)
