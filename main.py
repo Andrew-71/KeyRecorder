@@ -2,7 +2,7 @@ import json
 import sys
 import time
 
-from PyQt5 import uic
+from PyQt5 import uic, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, QFileDialog, QMessageBox
 
