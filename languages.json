@@ -49,6 +49,10 @@
     "clear_specific_recording_btn": {
       "en": "Clear from specific app",
       "ru": "Очистить запись от 1 приложения"
+    },
+    "custom_checkbox": {
+      "en": "Record specific window",
+      "ru": "Записывать только 1 окно"
     }
   },
 

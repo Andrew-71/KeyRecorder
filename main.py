@@ -206,7 +206,7 @@ class MainWindow(QMainWindow):
     def retranslate_ui(self):
         elements = [self.save_to_file_btn, self.open_from_file_btn,
                     self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn,
-                    self.change_res_btn, self.clear_specific_recording_btn]
+                    self.change_res_btn, self.clear_specific_recording_btn, self.custom_checkbox]
         for i in elements:
             i.setText(self.language_pack[i.objectName()][self.config['lang']])
 
