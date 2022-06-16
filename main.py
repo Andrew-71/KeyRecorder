@@ -2,6 +2,7 @@ import json
 import sys
 import time
 
+import win32gui
 from PyQt5 import uic, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, QFileDialog, QMessageBox
@@ -11,7 +12,7 @@ import mouse
 
 import pickle
 
-from win32gui import GetWindowText, GetForegroundWindow
+from win32gui import GetWindowText, GetForegroundWindow, EnumWindows
 from win32api import GetSystemMetrics
 
 from settings_window import SettingsWindow
@@ -58,6 +59,8 @@ class MainWindow(QMainWindow):
         self.change_res_btn.clicked.connect(self.show_resolution)
         self.settings_btn.clicked.connect(self.show_settings)
         self.clear_specific_recording_btn.clicked.connect(self.show_delete)
+
+        self.custom_checkbox.stateChanged.connect(self.custom_pick)
 
     # Recording management ==========================================
 
@@ -114,6 +117,20 @@ class MainWindow(QMainWindow):
             msg.setWindowTitle("Error")
             msg.exec_()
 
+    def custom_pick(self):
+        def winEnumHandler(hwnd, ctx):
+            if win32gui.IsWindowVisible(hwnd):
+                choices.append(win32gui.GetWindowText(hwnd))
+
+        self.custom_choice.setEnabled(not self.custom_choice.isEnabled())
+
+        self.custom_choice.clear()
+
+        if self.custom_choice.isEnabled():
+            choices = []
+            win32gui.EnumWindows(winEnumHandler, None)
+            self.custom_choice.addItems(list(set(choices)))
+
     # File management ===============================================
 
     def open_file(self):
@@ -166,6 +183,8 @@ class MainWindow(QMainWindow):
         self.list_advanced.addItems(long_view)
 
     def add_item(self, item):
+        if self.custom_choice.isEnabled() and GetWindowText(GetForegroundWindow()) not in ('', self.custom_choice.currentText()):
+            return
         self.events.append({'event': item, 'window': GetWindowText(GetForegroundWindow()),
                             'resolution': {'w': GetSystemMetrics(0), 'h': GetSystemMetrics(1)}})
         if self.config['dynamic_refresh']:
