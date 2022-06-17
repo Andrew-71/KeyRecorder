@@ -30,6 +30,8 @@ class SettingsWindow(QWidget):
 
         self.default_delay_spinbox.setValue(self.parent.config['default_delay'])
 
+        self.advanced_save_check.setChecked(self.parent.config['advanced_save'])
+
     def save_settings(self):
         if self.russian_radio.isChecked():
             lang = 'ru'
@@ -40,7 +42,8 @@ class SettingsWindow(QWidget):
                    "default_delay": self.default_delay_spinbox.value(),
                    "dynamic_refresh": self.dynamic_refresh_checkbox.isChecked(),
                    "stop_unexpected_playback": self.stop_unexpected_playback_checkbox.isChecked(),
-                   "auto_compatibility": self.auto_compatibility_checkbox.isChecked()}
+                   "auto_compatibility": self.auto_compatibility_checkbox.isChecked(),
+                   "advanced_save": self.advanced_save_check.isChecked()}
 
         with open("config.json", "w") as write_file:
             json.dump(new_cfg, write_file)

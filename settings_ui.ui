@@ -124,6 +124,13 @@
      </widget>
     </item>
     <item>
+     <widget class="QCheckBox" name="advanced_save_check">
+      <property name="text">
+       <string>Advanced saving</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QPushButton" name="save_btn">
       <property name="minimumSize">
        <size>

@@ -19,6 +19,7 @@ from settings_window import SettingsWindow
 from playback_thread import PlaybackThread
 from resolution_change_window import ResolutionWindow
 from delete_window_events import SelectDeleteWindowWindow
+from advanced_save import AdvancedSaveWindow
 
 from resolution_management_utils import resize, check_compatibility
 
@@ -32,9 +33,12 @@ class MainWindow(QMainWindow):
         # Load in user settings
         self.config = json.load(open('config.json', encoding="utf8"))
         self.language_pack = json.load(open('languages.json', encoding="utf8"))['main']
+
+        # Windows
         self.settings = SettingsWindow(self)
         self.res_window = ResolutionWindow(self)
         self.delete_manager = SelectDeleteWindowWindow(self)
+        self.advanced_save = AdvancedSaveWindow(self)
 
         self.events = []
         self.is_recording = False
@@ -145,8 +149,13 @@ class MainWindow(QMainWindow):
     def save_file(self):
         filename, ok = QFileDialog.getSaveFileName(self, 'Select file', '',
                                                    'Key Recorder File (*.krf);;All files (*) ')  # Key Recorder File
+
         if not ok or len(filename.split('.')) != 2:
             return 0
+
+        if self.config['advanced_save']:
+            self.advanced_save.render_options(filename)
+            return
         with open(filename, 'wb') as f:
             pickle.dump(self.events, f)
 
