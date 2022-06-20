@@ -2,4 +2,3 @@ PyQt5
 keyboard
 mouse
 pywin32
-pyautogui

@@ -3,7 +3,6 @@ from PyQt5.QtCore import QRunnable
 import keyboard
 import mouse
 import time
-import pyautogui
 
 from win32gui import GetWindowText, GetForegroundWindow
 
@@ -24,7 +23,7 @@ class PlaybackThread(QRunnable):
         mouse_events = []
         for i in self.events:
 
-            if pyautogui.position() != self.last_pos and self.last_pos is not False and self.parent.config['move_stop']:
+            if mouse.get_position() != self.last_pos and self.last_pos is not False and self.parent.config['move_stop']:
                 self.parent.toggle_buttons(enabled=True, include_stop=True)
                 return
 
@@ -46,7 +45,7 @@ class PlaybackThread(QRunnable):
                     self.parent.toggle_buttons(enabled=True, include_stop=True)
                     return
 
-            self.last_pos = pyautogui.position()
+            self.last_pos = mouse.get_position()
 
         mouse.play(mouse_events)
         self.parent.toggle_buttons(enabled=True, include_stop=True)
