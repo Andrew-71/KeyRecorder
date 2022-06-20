@@ -18,8 +18,9 @@ from win32api import GetSystemMetrics
 from settings_window import SettingsWindow
 from playback_thread import PlaybackThread
 from resolution_change_window import ResolutionWindow
-from delete_window_events import SelectDeleteWindowWindow
-from advanced_save import AdvancedSaveWindow
+from delete_events_window import SelectDeleteWindowWindow
+from advanced_save_window import AdvancedSaveWindow
+from event_states_window import EventStatesWindow
 
 from resolution_management_utils import resize, check_compatibility
 
@@ -29,6 +30,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         uic.loadUi('app_ui.ui', self)  # Load in UI  TODO: Replace with a class
+        self.setFixedSize(700, 1000)
 
         # Load in user settings
         self.config = json.load(open('config.json', encoding="utf8"))
@@ -39,6 +41,7 @@ class MainWindow(QMainWindow):
         self.res_window = ResolutionWindow(self)
         self.delete_manager = SelectDeleteWindowWindow(self)
         self.advanced_save = AdvancedSaveWindow(self)
+        self.enable_window = EventStatesWindow(self)
 
         self.events = []
         self.is_recording = False
@@ -65,6 +68,7 @@ class MainWindow(QMainWindow):
         self.clear_specific_recording_btn.clicked.connect(self.show_delete)
 
         self.custom_checkbox.stateChanged.connect(self.custom_pick)
+        self.change_enabled_btn.clicked.connect(self.change_events_states)
 
     # Recording management ==========================================
 
@@ -80,7 +84,6 @@ class MainWindow(QMainWindow):
         else:
             mouse.unhook_all()
             keyboard.unhook_all()
-            del self.events[-3:]  # Prevent program from restarting recording at the end of playback
             self.refresh_list()
 
     def clear_recording(self):
@@ -98,10 +101,17 @@ class MainWindow(QMainWindow):
             confirm = False
             if not self.config['auto_compatibility'] and check == 'partial':
                 confirm_window = QMessageBox
-                ret = confirm_window.question(self, 'Can\'t run',
-                                              "Not all events are same resolution as your monitor's\n"
-                                              "However we could run it in compatibility mode instead.\nDo that?",
-                                              confirm_window.Yes | confirm_window.No)
+                if self.config['lang'] == 'en':
+                    ret = confirm_window.question(self, 'Can\'t run',
+                                                  "Not all events are same resolution as your monitor's\n"
+                                                  "However we could run it in compatibility mode instead.\nDo that?",
+                                                  confirm_window.Yes | confirm_window.No)
+                else:
+                    ret = confirm_window.question(self, 'Невозможно запустить',
+                                                  "Не все события в Вашей записи одного разрешения с Вашим монитором\n"
+                                                  "Однако программу можно запустить в режиме совместимости.\n"
+                                                  "Сделать так?",
+                                                  confirm_window.Yes | confirm_window.No)
                 if ret == confirm_window.Yes:
                     confirm = True
                 else:
@@ -116,8 +126,13 @@ class MainWindow(QMainWindow):
         else:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
-            msg.setText("Can't run")
-            msg.setInformativeText('You need to convert all events to match your monitor\'s resolution first')
+            if self.config['lang'] == 'en':
+                msg.setText("Can't run")
+                msg.setInformativeText('You need to convert all events to match your monitor\'s resolution first')
+            else:
+                msg.setText("Не удалось запустить")
+                msg.setInformativeText('Требуется, чтобы все события записи были одного разрешение с Вашим монитором')
+
             msg.setWindowTitle("Error")
             msg.exec_()
 
@@ -162,21 +177,27 @@ class MainWindow(QMainWindow):
     # List management ===============================================
 
     def refresh_list(self):
-        enable_buttons = len(self.events) > 1
-        self.clear_recording_btn.setEnabled(enable_buttons)
-        self.save_to_file_btn.setEnabled(enable_buttons)
-        self.play_btn.setEnabled(enable_buttons)
-        self.clear_specific_recording_btn.setEnabled(enable_buttons)
-        self.change_res_btn.setEnabled(enable_buttons)
+        enable_buttons = len(list(filter(lambda x: x["enabled"], self.events))) > 1
+        buttons = [self.clear_recording_btn, self.save_to_file_btn, self.play_btn, self.clear_specific_recording_btn,
+                   self.change_res_btn]
+        for i in buttons:
+            i.setEnabled(enable_buttons)
+        self.change_enabled_btn.setEnabled(len(self.events) > 1)
 
         self.list.clear()
         self.list_advanced.clear()
 
-        short_view = [f'Total: {len(self.events)} events\n']
+        short_view = [f'Enabled: {len(list(filter(lambda x: x["enabled"], self.events)))} events\n'
+                      f'Total: {len(self.events)} events\n']
         long_view = []
         current = []
         for i in self.events:
             long_view.append(str(i))
+
+            # Short view only displays enabled events
+            if not i['enabled']:
+                continue
+
             if i['event'].__class__ != keyboard.KeyboardEvent and \
                     (len(current) == 0 or (len(current) > 0 and i['event'].__class__.__name__ == current[0])):
                 current.append(i['event'].__class__.__name__)
@@ -192,12 +213,21 @@ class MainWindow(QMainWindow):
         self.list_advanced.addItems(long_view)
 
     def add_item(self, item):
-        if self.custom_choice.isEnabled() and GetWindowText(GetForegroundWindow()) not in ('', self.custom_choice.currentText()):
-            return
-        self.events.append({'event': item, 'window': GetWindowText(GetForegroundWindow()),
-                            'resolution': {'w': GetSystemMetrics(0), 'h': GetSystemMetrics(1)}})
+        new_event = {'event': item,
+                     'window': GetWindowText(GetForegroundWindow()),
+                     'resolution': {'w': GetSystemMetrics(0), 'h': GetSystemMetrics(1)},
+                     'enabled': True}
+
+        # If we don't need to record the event disable it
+        if self.custom_choice.isEnabled() and GetWindowText(GetForegroundWindow()) not in ('KeyRecorder', '', self.custom_choice.currentText()) and not \
+                (self.custom_choice.currentText() == 'Архитектор' and GetWindowText(GetForegroundWindow()) in ('BimCad', 'Сохранение изменений')):
+            new_event['enabled'] = False
+
+        self.events.append(new_event)
+
+        # Dynamically refresh if needed
         if self.config['dynamic_refresh']:
-            self.list_advanced.addItem(str({'event': item, 'window': GetWindowText(GetForegroundWindow())}))
+            self.list_advanced.addItem(str(new_event))
 
     # UI management =================================================
 
@@ -215,7 +245,8 @@ class MainWindow(QMainWindow):
     def retranslate_ui(self):
         elements = [self.save_to_file_btn, self.open_from_file_btn,
                     self.play_btn, self.clear_recording_btn, self.typing_delay_label, self.settings_btn,
-                    self.change_res_btn, self.clear_specific_recording_btn, self.custom_checkbox]
+                    self.change_res_btn, self.clear_specific_recording_btn, self.custom_checkbox,
+                    self.change_enabled_btn]
         for i in elements:
             i.setText(self.language_pack[i.objectName()][self.config['lang']])
 
@@ -225,7 +256,7 @@ class MainWindow(QMainWindow):
         self.toggle_recording_btn.setText(self.language_pack['toggle_recording_btn'][self.config['lang']][
                                               ('start' if not self.is_recording else 'stop')])
 
-        for i in [self.settings, self.delete_manager, self.res_window]:
+        for i in [self.settings, self.delete_manager, self.res_window, self.enable_window, self.advanced_save]:
             i.retranslate_ui()
 
     def show_settings(self):
@@ -242,6 +273,10 @@ class MainWindow(QMainWindow):
     def show_delete(self):
         self.delete_manager.show_options()
         self.delete_manager.show()
+
+    def change_events_states(self):
+        self.enable_window.render_options()
+        self.enable_window.show()
 
 
 if __name__ == '__main__':

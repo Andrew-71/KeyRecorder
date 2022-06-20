@@ -1,1 +1,1 @@
-{"lang": "en", "default_delay": 0.05, "dynamic_refresh": false, "stop_unexpected_playback": true, "auto_compatibility": false, "advanced_save": true}
+{"lang": "ru", "default_delay": 0.2, "dynamic_refresh": false, "stop_unexpected_playback": false, "auto_compatibility": false, "advanced_save": true, "move_stop": false, "move_stop_frequency": 50}

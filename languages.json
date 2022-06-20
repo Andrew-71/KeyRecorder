@@ -53,6 +53,10 @@
     "custom_checkbox": {
       "en": "Record specific window",
       "ru": "Записывать только 1 окно"
+    },
+    "change_enabled_btn": {
+      "en": "Change enabled events",
+      "ru": "Изменить включенные события"
     }
   },
 
@@ -70,8 +74,8 @@
       "en": "Default typing delay"
     },
     "dynamic_refresh_checkbox": {
-      "ru": "Динамичное обновление (Может ухудшить работу)",
-      "en": "Dynamic Refresh (May hurt performance)"
+      "ru": "Динамичное обновление (Ухудшает работу)",
+      "en": "Dynamic Refresh (WILL hurt performance)"
     },
     "save_btn": {
       "ru": "Сохранить",
@@ -84,6 +88,18 @@
     "stop_unexpected_playback_checkbox": {
       "ru": "Остонавливать проигрываение в неожиданных ситуациях",
       "en": "Stop playback in unexpected situation"
+    },
+    "move_stop_checkbox": {
+      "ru": "Останавливать воспроизведение при движении мыши",
+      "en": "Move mouse to stop playback"
+    },
+    "move_stop_label": {
+      "ru": "Как часто проверять (в событиях)",
+      "en": "Check frequency (in events)"
+    },
+    "advanced_save_check": {
+      "ru": "Продвинутое сохранение",
+      "en": "Advanced saving"
     }
   },
 
@@ -122,6 +138,28 @@
     "monitor_res_btn": {
       "ru": "Монитора",
       "en": "Monitor's"
+    }
+  },
+
+  "event_states_window": {
+    "label": {
+      "ru": "Выберите включенные приложения",
+      "en": "Choose apps to enable"
+    },
+    "save_btn": {
+      "ru": "Сохранить",
+      "en": "Save"
+    }
+  },
+
+  "advanced_save_window":{
+    "label": {
+      "ru": "Выберите сохраняемые приложения",
+      "en": "Choose apps to save"
+    },
+    "save_btn": {
+      "ru": "Сохранить",
+      "en": "Save"
     }
   }
 }

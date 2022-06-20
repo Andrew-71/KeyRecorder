@@ -9,10 +9,12 @@ class SettingsWindow(QWidget):
         super().__init__()
 
         uic.loadUi('settings_ui.ui', self)  # Load in UI  TODO: Replace with a class
+        self.setFixedSize(525, 650)
         self.setWindowTitle('Settings')
 
         self.parent = parent
         self.save_btn.clicked.connect(self.save_settings)
+        self.github_label.setOpenExternalLinks(True)
 
         self.language_pack = json.load(open('languages.json', encoding="utf8"))['settings']
 
@@ -32,6 +34,11 @@ class SettingsWindow(QWidget):
 
         self.advanced_save_check.setChecked(self.parent.config['advanced_save'])
 
+        self.move_stop_checkbox.setChecked(self.parent.config['move_stop'])
+        self.move_stop_spinbox.setValue(self.parent.config['move_stop_frequency'])
+        self.move_stop_spinbox.setEnabled(self.move_stop_checkbox.isChecked())
+        self.move_stop_checkbox.stateChanged.connect(lambda: self.move_stop_spinbox.setEnabled(self.move_stop_checkbox.isChecked()))
+
     def save_settings(self):
         if self.russian_radio.isChecked():
             lang = 'ru'
@@ -43,7 +50,9 @@ class SettingsWindow(QWidget):
                    "dynamic_refresh": self.dynamic_refresh_checkbox.isChecked(),
                    "stop_unexpected_playback": self.stop_unexpected_playback_checkbox.isChecked(),
                    "auto_compatibility": self.auto_compatibility_checkbox.isChecked(),
-                   "advanced_save": self.advanced_save_check.isChecked()}
+                   "advanced_save": self.advanced_save_check.isChecked(),
+                   "move_stop": self.move_stop_checkbox.isChecked(),
+                   "move_stop_frequency": self.move_stop_spinbox.value()}
 
         with open("config.json", "w") as write_file:
             json.dump(new_cfg, write_file)
@@ -53,6 +62,7 @@ class SettingsWindow(QWidget):
     def retranslate_ui(self):
         elements = [self.save_btn, self.settings_label,
                     self.language_label, self.default_delay_label, self.dynamic_refresh_checkbox,
-                    self.stop_unexpected_playback_checkbox, self.auto_compatibility_checkbox]
+                    self.stop_unexpected_playback_checkbox, self.auto_compatibility_checkbox, self.advanced_save_check,
+                    self.move_stop_checkbox, self.move_stop_label]
         for i in elements:
             i.setText(self.language_pack[i.objectName()][self.parent.config['lang']])

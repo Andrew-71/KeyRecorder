@@ -11,7 +11,7 @@ def check_compatibility(events):
 
     full = True
     partial = True
-    for i in events:
+    for i in list(filter(lambda x: x['enabled'], events)):
         res = i['resolution']
         if res['w'] != w or res['h'] != h:
             full = False

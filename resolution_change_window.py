@@ -13,7 +13,8 @@ class ResolutionWindow(QWidget):
     def __init__(self, parent):
         super().__init__()
 
-        uic.loadUi('resolution_change.ui', self)  # Load in UI  TODO: Replace with a class
+        uic.loadUi('resolution_change_window.ui', self)  # Load in UI  TODO: Replace with a class
+        self.setFixedSize(400, 280)
         self.setWindowTitle('Change resolution')
 
         self.parent = parent
