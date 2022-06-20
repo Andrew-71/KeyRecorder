@@ -1,5 +1,5 @@
 PyQt5
 keyboard
 mouse
-pickle
 pywin32
+pyautogui
